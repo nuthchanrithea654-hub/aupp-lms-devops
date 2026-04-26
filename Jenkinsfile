@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'Sonar-Jenkins'
+        IMAGE_NAME = 'aupp-lms-api'
     }
 
     triggers {
@@ -21,9 +22,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('app') {
-                    sh '''
-                        npm install
-                    '''
+                    sh 'npm install'
                 }
             }
         }
@@ -47,14 +46,39 @@ pipeline {
                 }
             }
         }
+
+        stage('Trivy Dependency Scan') {
+            steps {
+                sh '''
+                    trivy fs --severity CRITICAL --exit-code 1 --no-progress app
+                '''
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    docker build -t $IMAGE_NAME:latest ./app
+                '''
+            }
+        }
+
+        stage('Trivy Docker Image Scan') {
+            steps {
+                sh '''
+                    trivy image --severity CRITICAL --exit-code 1 --no-progress $IMAGE_NAME:latest
+                '''
+            }
+        }
     }
 
     post {
         success {
-            echo 'CI SUCCESS'
+            echo 'CI SECURITY PIPELINE SUCCESS: SonarQube and Trivy passed.'
         }
+
         failure {
-            echo 'CI FAILED'
+            echo 'CI SECURITY PIPELINE FAILED: Quality Gate or Critical vulnerability detected.'
         }
     }
 }
