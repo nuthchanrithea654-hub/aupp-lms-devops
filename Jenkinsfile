@@ -81,4 +81,19 @@ pipeline {
             echo 'CI SECURITY PIPELINE FAILED: Quality Gate or Critical vulnerability detected.'
         }
     }
+    stage('Deploy to EC2') {
+        steps {
+            sh '''
+                docker save aupp-lms-api:latest | gzip > aupp-lms-api.tar.gz
+
+                scp -i /var/lib/jenkins/auppfinal.pem -o StrictHostKeyChecking=no aupp-lms-api.tar.gz ubuntu@50.17.33.164:/home/ubuntu/
+
+                ssh -i /var/lib/jenkins/auppfinal.pem -o StrictHostKeyChecking=no ubuntu@50.17.33.164 "
+                    docker load < /home/ubuntu/aupp-lms-api.tar.gz &&
+                    docker rm -f aupp-lms-api || true &&
+                    docker run -d -p 3000:3000 --name aupp-lms-api aupp-lms-api:latest
+                "
+            '''
+        }
+    }
 }
