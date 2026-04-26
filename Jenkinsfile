@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'NodeJS'
-        sonarScanner 'Sonar-Scanner'
-    }
-
     environment {
         SONARQUBE_SERVER = 'Jenkins-To-Sonar'
     }
@@ -16,36 +11,36 @@ pipeline {
 
     stages {
 
-        stage('Checkout Code from GitHub') {
+        stage('Checkout Code') {
             steps {
                 git branch: 'main',
                     url: 'git@github-theadevops1:nuthchanrithea654-hub/aupp-lms-devops.git'
             }
         }
 
-        stage('Install Backend Dependencies') {
+        stage('Install Dependencies') {
             steps {
                 dir('app') {
-                    sh 'npm install'
-                }
-            }
-        }
-
-        stage('SonarQube Code Quality Scan') {
-            steps {
-                withSonarQubeEnv("${SONARQUBE_SERVER}") {
                     sh '''
-                        sonar-scanner \
-                        -Dsonar.projectKey=aupp-lms-devops \
-                        -Dsonar.projectName="AUPP LMS DevOps" \
-                        -Dsonar.sources=app \
-                        -Dsonar.exclusions=app/node_modules/**
+                        npm install
                     '''
                 }
             }
         }
 
-        stage('Quality Gate Check') {
+        stage('SonarQube Scan') {
+            steps {
+                withSonarQubeEnv("${SONARQUBE_SERVER}") {
+                    sh '''
+                        /opt/sonar-scanner/bin/sonar-scanner \
+                        -Dsonar.projectKey=aupp-lms-devops \
+                        -Dsonar.sources=app
+                    '''
+                }
+            }
+        }
+
+        stage('Quality Gate') {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
@@ -56,11 +51,10 @@ pipeline {
 
     post {
         success {
-            echo 'CI pipeline completed successfully.'
+            echo 'CI SUCCESS'
         }
-
         failure {
-            echo 'CI pipeline failed. Check SonarQube Quality Gate or build logs.'
+            echo 'CI FAILED'
         }
     }
 }
