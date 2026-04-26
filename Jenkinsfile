@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_SERVER = 'Jenkins-To-Sonar'
+        SONARQUBE_SERVER = 'SonarQube'
     }
 
     triggers {
