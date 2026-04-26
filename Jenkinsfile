@@ -70,30 +70,31 @@ pipeline {
                 '''
             }
         }
+
+        stage('Deploy to EC2') {
+            steps {
+                sh '''
+                    docker save $IMAGE_NAME:latest | gzip > $IMAGE_NAME.tar.gz
+
+                    scp -i /var/lib/jenkins/auppfinal.pem -o StrictHostKeyChecking=no $IMAGE_NAME.tar.gz ubuntu@50.17.33.164:/home/ubuntu/
+
+                    ssh -i /var/lib/jenkins/auppfinal.pem -o StrictHostKeyChecking=no ubuntu@50.17.33.164 "
+                        docker load < /home/ubuntu/$IMAGE_NAME.tar.gz &&
+                        docker rm -f $IMAGE_NAME || true &&
+                        docker run -d -p 3000:3000 --name $IMAGE_NAME $IMAGE_NAME:latest
+                    "
+                '''
+            }
+        }
     }
 
     post {
         success {
-            echo 'CI SECURITY PIPELINE SUCCESS: SonarQube and Trivy passed.'
+            echo 'FULL CI/CD PIPELINE SUCCESS: SonarQube, Trivy, Docker build, and EC2 deployment passed.'
         }
 
         failure {
-            echo 'CI SECURITY PIPELINE FAILED: Quality Gate or Critical vulnerability detected.'
-        }
-    }
-    stage('Deploy to EC2') {
-        steps {
-            sh '''
-                docker save aupp-lms-api:latest | gzip > aupp-lms-api.tar.gz
-
-                scp -i /var/lib/jenkins/auppfinal.pem -o StrictHostKeyChecking=no aupp-lms-api.tar.gz ubuntu@50.17.33.164:/home/ubuntu/
-
-                ssh -i /var/lib/jenkins/auppfinal.pem -o StrictHostKeyChecking=no ubuntu@50.17.33.164 "
-                    docker load < /home/ubuntu/aupp-lms-api.tar.gz &&
-                    docker rm -f aupp-lms-api || true &&
-                    docker run -d -p 3000:3000 --name aupp-lms-api aupp-lms-api:latest
-                "
-            '''
+            echo 'PIPELINE FAILED: Quality Gate, Trivy, Docker build, or deployment failed.'
         }
     }
 }
