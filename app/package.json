@@ -1,0 +1,12 @@
+{
+  "name": "aupp-lms-api",
+  "version": "1.0.0",
+  "description": "AUPP LMS backend API for DevOps CI/CD project",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
