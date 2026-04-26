@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("AUPP LMS DevOps API - Main Version");
+  res.send("AUPP LMS DevOps API - Updated by Developer 1");
 });
 
 app.get("/courses", (req, res) => {
