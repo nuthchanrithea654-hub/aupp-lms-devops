@@ -14,7 +14,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                    url: 'git@github-theadevops1:nuthchanrithea654-hub/aupp-lms-devops.git'
+                    url: 'https://github.com/nuthchanrithea654-hub/aupp-lms-devops.git'
             }
         }
 
