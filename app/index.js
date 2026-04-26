@@ -13,7 +13,7 @@ app.get("/courses", (req, res) => {
   res.json([
     {
       id: 1,
-      course: "Cloud Automation Updated by Dev 2"
+      course: "Cloud Automation Updated by Dev 3"
     },
     {
       id: 2,
